@@ -8,7 +8,7 @@ import os
 import webbrowser
 from bs4 import BeautifulSoup
 from imapclient import IMAPClient
-import pyzmail
+from pyzmail import PyzMessage
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -28,11 +28,11 @@ unsubscribe_urls = []
 with IMAPClient(IMAP_HOST) as client:
     client.login(IMAP_ADDRESS, IMAP_PASSWORD)
     client.select_folder("INBOX", readonly=True)
-    UIDs = client.search(["SINCE", SEARCH_BEGIN_DATE])
+    email_ids = client.search(["SINCE", SEARCH_BEGIN_DATE])
 
-    for uid in UIDs:
-        raw_message = client.fetch([uid], ["BODY[]", "FLAGS"])
-        message = pyzmail.PyzMessage.factory(raw_message[uid][b"BODY[]"])
+    for email_id in email_ids:
+        raw_message = client.fetch([email_id], ["BODY[]", "FLAGS"])
+        message = PyzMessage.factory(raw_message[email_id][b"BODY[]"])
         if message.html_part is not None:
             html_msg = message.html_part.get_payload().decode(message.html_part.charset)
             soup = BeautifulSoup(html_msg, features="html.parser")
